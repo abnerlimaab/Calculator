@@ -1,4 +1,4 @@
-import { ITheme } from "./ITheme";
+import { ITheme } from "../../interfaces/ITheme";
 
 export const dark: ITheme = {
     colors: {

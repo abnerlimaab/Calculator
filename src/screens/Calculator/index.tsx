@@ -1,20 +1,19 @@
 import React from 'react';
 import { FlatList, Text, useColorScheme, View } from 'react-native';
 import { createStyles, lineButtonsStyles } from './styles';
-import CalculatorButom, { Enphasis } from '../../components/CalculatorButton';
+import CalculatorButom from '../../components/CalculatorButton';
 import { themes } from '../../styles/themes';
+import { Enphasis } from '../../enums/Enphasis';
+import { isOperator, Operators } from '../../enums/Operators';
 
-interface LineButtonsProps {
-  data: string[];
-}
+const highEnphasis: Operators[] = [Operators.Divide, Operators.Multiply, Operators.Subtract, Operators.Add, Operators.Equal];
+const mediumEnphasis: Operators[] = [Operators.Erase, Operators.PlusMinus, Operators.Percent];
 
-const eraseCode = '\u232B';
-const divideCode = '\u00F7';
+function getEnphasis(item: Operators | string): Enphasis {
+  if (!isOperator(item)) {
+    return Enphasis.low;
+  }
 
-const highEnphasis = [divideCode, 'x', '-', '+', '='];
-const mediumEnphasis = ['C', '+/-', '%'];
-
-function getEnphasis(item: string): Enphasis {
   if (highEnphasis.includes(item)) {
     return Enphasis.high;
   }
@@ -24,6 +23,10 @@ function getEnphasis(item: string): Enphasis {
   }
 
   return Enphasis.low;
+}
+
+interface LineButtonsProps {
+  data: string[];
 }
 
 function LineButtons({ data }: LineButtonsProps) {
@@ -47,7 +50,7 @@ function Calculator() {
     <View style={styles.container}>
       <View style={styles.topSpacer} />
 
-      <Text style={styles.operationText}>6291 {divideCode} 5</Text>
+      <Text style={styles.operationText}>6291 {Operators.Divide} 5</Text>
 
       <Text
         style={styles.resultText}
@@ -57,11 +60,11 @@ function Calculator() {
       >1258.2</Text>
 
       <View>
-        <LineButtons data={['C', '+/-', '%', divideCode]} />
-        <LineButtons data={['7', '8', '9', 'x']} />
-        <LineButtons data={['4', '5', '6', '-']} />
-        <LineButtons data={['1', '2', '3', '+']} />
-        <LineButtons data={['.', '0', eraseCode, '=']} />
+        <LineButtons data={[Operators.Erase, Operators.PlusMinus, Operators.Percent, Operators.Divide]} />
+        <LineButtons data={['7', '8', '9', Operators.Multiply]} />
+        <LineButtons data={['4', '5', '6', Operators.Subtract]} />
+        <LineButtons data={['1', '2', '3', Operators.Add]} />
+        <LineButtons data={['.', '0', Operators.Rubber, '=']} />
       </View>
     </View>
   );

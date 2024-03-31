@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { ITheme } from '../../styles/themes/ITheme';
+import { ITheme } from '../../interfaces/ITheme';
 
 export const lineButtonsStyles = StyleSheet.create({
   flexLineColumnWrapper: {

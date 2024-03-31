@@ -1,17 +1,15 @@
-import {StyleSheet} from 'react-native';
-import { ITheme } from '../../styles/themes/ITheme';
-import { Enphasis } from '.';
+import { StyleSheet } from 'react-native';
+import { ITheme } from '../../interfaces/ITheme';
+import { Enphasis } from '../../enums/Enphasis';
 
-function getEnphasisBackgroundColor(enphasis: Enphasis, theme: ITheme) {
-  switch (enphasis) {
-    case Enphasis.low:
-      return theme.colors.button.lowEmphasis;
-    case Enphasis.medium:
-      return theme.colors.button.mediumEmphasis;
-    case Enphasis.high:
-      return theme.colors.button.highEmphasis;
-  }
-}
+const mapEnphasisBackgroundColor = (theme: ITheme) => ({
+  [Enphasis.low]:
+    theme.colors.button.lowEmphasis,
+  [Enphasis.medium]:
+    theme.colors.button.mediumEmphasis,
+  [Enphasis.high]:
+    theme.colors.button.highEmphasis,
+});
 
 export const createStyles = (theme: ITheme, enphasis: Enphasis) => StyleSheet.create({
   container: {
@@ -20,7 +18,7 @@ export const createStyles = (theme: ITheme, enphasis: Enphasis) => StyleSheet.cr
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 10,
-    backgroundColor: getEnphasisBackgroundColor(enphasis, theme),
+    backgroundColor: mapEnphasisBackgroundColor(theme)[enphasis],
   },
   text: {
     fontSize: 32,

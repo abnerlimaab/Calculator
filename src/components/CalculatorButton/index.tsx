@@ -1,15 +1,20 @@
 import React from 'react';
-import { Text, TouchableOpacity, TouchableOpacityProps, useColorScheme } from 'react-native';
-import { createStyles } from './styles';
-import { themes } from '../../styles/themes';
-import { Enphasis } from '../../enums/Enphasis';
+import {
+  Text,
+  TouchableOpacity,
+  TouchableOpacityProps,
+  useColorScheme,
+} from 'react-native';
+import {createStyles} from './styles';
+import {themes} from '../../styles/themes';
+import {Enphasis} from '../../enums/Enphasis';
 
 interface CalculatorButomProps extends TouchableOpacityProps {
   children: string;
   enphasis: Enphasis;
 }
 
-function CalculatorButom({ children, enphasis, ...rest }: CalculatorButomProps) {
+function CalculatorButom({children, enphasis, ...rest}: CalculatorButomProps) {
   const colorScheme = useColorScheme();
   const styles = createStyles(themes[colorScheme ?? 'light'], enphasis);
 

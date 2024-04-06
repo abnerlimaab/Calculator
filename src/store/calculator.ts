@@ -49,7 +49,23 @@ export function onOperationStringChange(
     }
 
     if (newHistory[lastHistoryIndex]) {
-      newHistory[lastHistoryIndex][1] = lastChar;
+      if (lastChar === Operators.Percent) {
+        newHistory[lastHistoryIndex][0] = newHistory[lastHistoryIndex][0] / 100;
+
+        const historyHandler = HistoryHandler(newHistory);
+        const historyResult = historyHandler
+          .map(resolveMultiplicationAndDivision)
+          .map(resolveAdditionAndSubtraction).history;
+
+        return {
+          ...state,
+          operationString: `${state.operationString}${lastChar}`,
+          history: historyHandler.history,
+          result: historyResult[0][0].toString(),
+        };
+      } else {
+        newHistory[lastHistoryIndex][1] = lastChar;
+      }
     }
 
     if (lastChar === Operators.Equal) {

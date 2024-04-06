@@ -3,9 +3,9 @@ import {Operators} from '../enums/Operators';
 export interface ICalculator {
   result: string;
   operationString: string;
-  history: History;
+  history: OperationTree;
 }
 
-export type History = HistoryItem[];
+export type OperationTree = Operation[];
 
-export type HistoryItem = [number, Operators?];
+export type Operation = [number, Operators?];

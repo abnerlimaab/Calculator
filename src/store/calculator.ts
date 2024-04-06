@@ -1,5 +1,5 @@
 import {isOperator, Operators} from '../enums/Operators';
-import {History, HistoryItem, ICalculator} from '../interfaces/ICalculator';
+import {OperationTree, Operation, ICalculator} from '../interfaces/ICalculator';
 
 export const initialState: ICalculator = {
   result: '0',
@@ -25,11 +25,12 @@ export function onOperationStringChange(
   const lastHistoryIndex = newHistory.length - 1;
 
   if (Number(lastChar) || lastChar === '0' || lastChar === '.') {
+    const floatPoint = state.operationString.endsWith('.') ? '.' : '';
+
     newHistory[lastHistoryIndex][0] =
-      Number(`${newHistory[lastHistoryIndex][0]}${lastChar}`) || 0;
+      Number(`${newHistory[lastHistoryIndex][0]}${floatPoint}${lastChar}`) || 0;
 
     const historyHandler = HistoryHandler(newHistory);
-
     const historyResult = historyHandler
       .map(resolveMultiplicationAndDivision)
       .map(resolveAdditionAndSubtraction).history;
@@ -38,12 +39,34 @@ export function onOperationStringChange(
       ...state,
       operationString: `${state.operationString}${lastChar}`,
       history: historyHandler.history,
-      result: historyResult[0][0].toString(),
+      result: isNaN(historyResult[0][0]) ? ' ' : historyResult[0][0].toString(),
     };
   }
 
   if (isOperator(lastChar)) {
-    newHistory[lastHistoryIndex][1] = lastChar;
+    if (state.operationString.length === 0) {
+      return state;
+    }
+
+    if (newHistory[lastHistoryIndex]) {
+      newHistory[lastHistoryIndex][1] = lastChar;
+    }
+
+    if (lastChar === Operators.Equal) {
+      return {
+        ...state,
+        operationString: '',
+        history: [],
+      };
+    }
+
+    if (lastChar === Operators.Erase) {
+      return {
+        operationString: '',
+        history: [],
+        result: '0',
+      };
+    }
 
     const historyHandler = HistoryHandler([...newHistory, [0, undefined]]);
 
@@ -61,9 +84,9 @@ export function onOperationStringChange(
 }
 
 function resolveOperationBetweenHistoryItems(
-  x: HistoryItem,
-  y: HistoryItem,
-): HistoryItem {
+  x: Operation,
+  y: Operation,
+): Operation {
   const [a, operatorA] = x;
   const [b, operatorB] = y;
 
@@ -75,6 +98,9 @@ function resolveOperationBetweenHistoryItems(
     case Operators.Multiply:
       return [a * b, operatorB];
     case Operators.Divide:
+      if (b === 0) {
+        return [NaN, operatorB];
+      }
       return [a / b, operatorB];
     default:
       return y;
@@ -82,17 +108,17 @@ function resolveOperationBetweenHistoryItems(
 }
 
 interface IHistoryHandler {
-  history: History;
+  history: OperationTree;
   map: (
-    callback: (a: HistoryItem, b: HistoryItem) => [HistoryItem, HistoryItem?],
+    callback: (a: Operation, b: Operation) => [Operation, Operation?],
   ) => IHistoryHandler;
 }
 
-function HistoryHandler(history: History): IHistoryHandler {
+function HistoryHandler(history: OperationTree): IHistoryHandler {
   function map(
-    _history: History,
-    callback: (a: HistoryItem, b: HistoryItem) => [HistoryItem, HistoryItem?],
-  ): History {
+    _history: OperationTree,
+    callback: (a: Operation, b: Operation) => [Operation, Operation?],
+  ): OperationTree {
     if (_history.length === 1) {
       return _history;
     }
@@ -122,9 +148,9 @@ function HistoryHandler(history: History): IHistoryHandler {
 }
 
 function resolveMultiplicationAndDivision(
-  a: HistoryItem,
-  b: HistoryItem,
-): [HistoryItem, HistoryItem?] {
+  a: Operation,
+  b: Operation,
+): [Operation, Operation?] {
   const aOperator = a[1];
 
   if (aOperator === Operators.Multiply || aOperator === Operators.Divide) {
@@ -135,9 +161,9 @@ function resolveMultiplicationAndDivision(
 }
 
 function resolveAdditionAndSubtraction(
-  a: HistoryItem,
-  b: HistoryItem,
-): [HistoryItem, HistoryItem?] {
+  a: Operation,
+  b: Operation,
+): [Operation, Operation?] {
   const aOperator = a[1];
 
   if (aOperator === Operators.Add || aOperator === Operators.Subtract) {

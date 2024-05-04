@@ -11,92 +11,153 @@ export function onOperationStringChange(
   state: ICalculator,
   nextChar: string,
 ): ICalculator {
-  const lastChar = nextChar[nextChar.length - 1];
-
-  if (state.history.length === 0 && !isOperator(lastChar)) {
+  if (isOperator(nextChar) && nextChar === Operators.Erase) {
     return {
-      ...state,
-      operationString: nextChar,
-      history: [[Number(nextChar), undefined]],
+      operationString: '',
+      history: [],
+      result: '0',
     };
   }
 
-  const newHistory = [...state.history];
-  const lastHistoryIndex = newHistory.length - 1;
-
-  if (Number(lastChar) || lastChar === '0' || lastChar === '.') {
-    const floatPoint = state.operationString.endsWith('.') ? '.' : '';
-
-    newHistory[lastHistoryIndex][0] =
-      Number(`${newHistory[lastHistoryIndex][0]}${floatPoint}${lastChar}`) || 0;
-
-    const historyHandler = HistoryHandler(newHistory);
-    const historyResult = historyHandler
-      .map(resolveMultiplicationAndDivision)
-      .map(resolveAdditionAndSubtraction).history;
-
-    return {
-      ...state,
-      operationString: `${state.operationString}${lastChar}`,
-      history: historyHandler.history,
-      result: isNaN(historyResult[0][0]) ? ' ' : historyResult[0][0].toString(),
-    };
-  }
-
-  if (isOperator(lastChar)) {
-    if (state.operationString.length === 0) {
-      return state;
-    }
-
-    if (newHistory[lastHistoryIndex]) {
-      if (lastChar === Operators.Percent) {
-        newHistory[lastHistoryIndex][0] = newHistory[lastHistoryIndex][0] / 100;
-
-        const historyHandler = HistoryHandler(newHistory);
-        const historyResult = historyHandler
-          .map(resolveMultiplicationAndDivision)
-          .map(resolveAdditionAndSubtraction).history;
-
-        return {
-          ...state,
-          operationString: `${state.operationString}${lastChar}`,
-          history: historyHandler.history,
-          result: historyResult[0][0].toString(),
-        };
-      } else {
-        newHistory[lastHistoryIndex][1] = lastChar;
-      }
-    }
-
-    if (lastChar === Operators.Equal) {
-      return {
-        ...state,
-        operationString: '',
-        history: [],
-      };
-    }
-
-    if (lastChar === Operators.Erase) {
-      return {
-        operationString: '',
-        history: [],
-        result: '0',
-      };
-    }
-
-    const historyHandler = HistoryHandler([...newHistory, [0, undefined]]);
-
-    return {
-      ...state,
-      operationString: `${state.operationString}${lastChar}`,
-      history: historyHandler.history,
-    };
-  }
+  const [operationTree, newString] = createOperationTree(
+    state.operationString + nextChar,
+  );
+  const historyHandler = HistoryHandler(operationTree);
+  const historyResult = historyHandler
+    .map(resolveMultiplicationAndDivision)
+    .map(resolveAdditionAndSubtraction).history;
 
   return {
     ...state,
-    operationString: nextChar,
+    operationString: newString,
+    history: historyHandler.history,
+    result: isNaN(historyResult[0][0]) ? ' ' : historyResult[0][0].toString(),
   };
+
+  // const lastChar = nextChar[nextChar.length - 1];
+
+  // if (state.history.length === 0 && !isOperator(lastChar)) {
+  //   return {
+  //     ...state,
+  //     operationString: nextChar,
+  //     history: [[Number(nextChar), undefined]],
+  //   };
+  // }
+
+  // const newHistory = [...state.history];
+  // const lastHistoryIndex = newHistory.length - 1;
+
+  // if (Number(lastChar) || lastChar === '0' || lastChar === '.') {
+  //   const floatPoint = state.operationString.endsWith('.') ? '.' : '';
+
+  //   newHistory[lastHistoryIndex][0] =
+  //     Number(`${newHistory[lastHistoryIndex][0]}${floatPoint}${lastChar}`) || 0;
+
+  //   const historyHandler = HistoryHandler(newHistory);
+  //   const historyResult = historyHandler
+  //     .map(resolveMultiplicationAndDivision)
+  //     .map(resolveAdditionAndSubtraction).history;
+
+  //   return {
+  //     ...state,
+  //     operationString: `${state.operationString}${lastChar}`,
+  //     history: historyHandler.history,
+  //     result: isNaN(historyResult[0][0]) ? ' ' : historyResult[0][0].toString(),
+  //   };
+  // }
+
+  // if (isOperator(lastChar)) {
+  //   if (state.operationString.length === 0) {
+  //     return state;
+  //   }
+
+  //   if (lastChar === Operators.Rubber) {
+  //     if (newHistory[lastHistoryIndex][1]) {
+  //       newHistory[lastHistoryIndex][1] = undefined;
+
+  //       const historyHandler = HistoryHandler(newHistory);
+  //       const historyResult = historyHandler
+  //         .map(resolveMultiplicationAndDivision)
+  //         .map(resolveAdditionAndSubtraction).history;
+
+  //       return {
+  //         ...state,
+  //         operationString: state.operationString.slice(0, -1),
+  //         history: historyHandler.history,
+  //         result: historyResult[0][0].toString(),
+  //       };
+  //     } else {
+  //       if (newHistory[lastHistoryIndex][0].toString().length === 1) {
+  //         newHistory.pop();
+  //       } else {
+  //         newHistory[lastHistoryIndex][0] = Math.floor(
+  //           newHistory[lastHistoryIndex][0] / 10,
+  //         );
+  //       }
+
+  //       const historyHandler = HistoryHandler(newHistory);
+  //       const historyResult = historyHandler
+  //         .map(resolveMultiplicationAndDivision)
+  //         .map(resolveAdditionAndSubtraction).history;
+
+  //       return {
+  //         ...state,
+  //         operationString: state.operationString.slice(0, -1),
+  //         history: historyHandler.history,
+  //         result: historyResult[0][0].toString(),
+  //       };
+  //     }
+  //   }
+
+  //   if (newHistory[lastHistoryIndex]) {
+  //     if (lastChar === Operators.Percent) {
+  //       newHistory[lastHistoryIndex][0] = newHistory[lastHistoryIndex][0] / 100;
+
+  //       const historyHandler = HistoryHandler(newHistory);
+  //       const historyResult = historyHandler
+  //         .map(resolveMultiplicationAndDivision)
+  //         .map(resolveAdditionAndSubtraction).history;
+
+  //       return {
+  //         ...state,
+  //         operationString: `${state.operationString}${lastChar}`,
+  //         history: historyHandler.history,
+  //         result: historyResult[0][0].toString(),
+  //       };
+  //     } else {
+  //       newHistory[lastHistoryIndex][1] = lastChar;
+  //     }
+  //   }
+
+  //   if (lastChar === Operators.Equal) {
+  //     return {
+  //       ...state,
+  //       operationString: '',
+  //       history: [],
+  //     };
+  //   }
+
+  //   if (lastChar === Operators.Erase) {
+  //     return {
+  //       operationString: '',
+  //       history: [],
+  //       result: '0',
+  //     };
+  //   }
+
+  //   const historyHandler = HistoryHandler([...newHistory, [0, undefined]]);
+
+  //   return {
+  //     ...state,
+  //     operationString: `${state.operationString}${lastChar}`,
+  //     history: historyHandler.history,
+  //   };
+  // }
+
+  // return {
+  //   ...state,
+  //   operationString: nextChar,
+  // };
 }
 
 function resolveOperationBetweenHistoryItems(
@@ -135,8 +196,8 @@ function HistoryHandler(history: OperationTree): IHistoryHandler {
     _history: OperationTree,
     callback: (a: Operation, b: Operation) => [Operation, Operation?],
   ): OperationTree {
-    if (_history.length === 1) {
-      return _history;
+    if (_history.length <= 1) {
+      return [[0, undefined]];
     }
 
     const copyHistory = [..._history];
@@ -187,4 +248,53 @@ function resolveAdditionAndSubtraction(
   }
 
   return [a, b];
+}
+
+export function createOperationTree(
+  operationStr: string,
+): [OperationTree, string] {
+  const operationTree: OperationTree = [];
+
+  if (operationStr.length === 0) {
+    return [operationTree, ''];
+  }
+
+  for (let i = 0; i < operationStr.length; i++) {
+    const char = operationStr[i];
+
+    if (Number(char) || char === '0' || char === '.') {
+      const lastOperation = operationTree[operationTree.length - 1];
+      const floatPoint = operationStr[i - 1] === '.' ? '.' : '';
+
+      if (lastOperation && lastOperation[1]) {
+        operationTree.push([Number(char)]);
+        continue;
+      }
+
+      if (lastOperation && Number(lastOperation[0])) {
+        operationTree[operationTree.length - 1][0] = Number(
+          `${lastOperation[0]}${floatPoint}${char}`,
+        );
+      } else {
+        operationTree.push([Number(char)]);
+      }
+    }
+
+    if (isOperator(char)) {
+      if (char === Operators.Rubber) {
+        const stringWithoutLastChar = operationStr.slice(0, -2);
+        return createOperationTree(stringWithoutLastChar);
+      }
+
+      if (operationTree.length === 0) {
+        return [operationTree, operationStr];
+      } else if (char === Operators.Percent) {
+        operationTree[operationTree.length - 1][0] /= 100;
+      } else {
+        operationTree[operationTree.length - 1][1] = char;
+      }
+    }
+  }
+
+  return [operationTree, operationStr];
 }
